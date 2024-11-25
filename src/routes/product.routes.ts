@@ -8,10 +8,10 @@ const productRouter = express.Router()
 // get, create , patch '/products' getbyId ( /products/:id)
 productRouter.post(
   Endpoints.ROOT,
-  // authenticate,
+  authenticate,
   ProductController.createProduct
 )
-productRouter.get(Endpoints.ROOT, ProductController.getProducts)
+productRouter.get(Endpoints.ROOT, authenticate, ProductController.getProducts)
 productRouter.put(Endpoints.ROOT, ProductController.updateProduct)
 productRouter.delete(Endpoints.ROOT, ProductController.deleteProduct)
 // productRouter.get(Endpoints.product.SINGLE, ProductController.getProductById)

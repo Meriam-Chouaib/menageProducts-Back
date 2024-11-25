@@ -12,5 +12,5 @@ authRouter.post(
   AuthController.signUp
 )
 authRouter.post(Endpoints.auth.SIGNIN, AuthController.signIn)
-authRouter.post(Endpoints.auth.LOGOUT, AuthController.logout)
+authRouter.post(Endpoints.auth.LOGOUT, authenticate, AuthController.logout)
 export default authRouter
