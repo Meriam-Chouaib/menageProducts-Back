@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("MYSQL_DATABASE")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  price       Float
+  quantity    Int
+  description String
+  userId      Int      // Foreign key
+  user        User     @relation(fields: [userId], references: [id]) // Defines the relation
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id        Int         @id @default(autoincrement())
+  email     String      @unique(map: "User_email_key")
+  username  String
+  password  String
+  image     String
+  phone     String?
+  isLogged  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @default(now())
+  products  Product[]   // Automatically linked by the relation in `Product`
+  statut    user_statut @default(ONLINE)
+  role      user_role
+  isActive  Boolean     @default(true)
+}
+
+enum user_statut {
+  ONLINE
+  OFFLINE
+}
+
+enum user_role {
+  VISITOR
+  SELLER
+  ADMIN
+}

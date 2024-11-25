@@ -1,0 +1,1 @@
+{"version":3,"file":"getTokenFromHeaders.js","sourceRoot":"","sources":["../../src/utils/getTokenFromHeaders.ts"],"names":[],"mappings":";;;AAAO,MAAM,mBAAmB,GAAG,CAAC,GAAQ,EAAsB,EAAE;;IAClE,MAAM,KAAK,GAAG,MAAA,GAAG,CAAC,OAAO,CAAC,aAAa,0CAAE,KAAK,CAAC,GAAG,EAAE,CAAC,CAAC,CAAA;IACtD,OAAO,KAAK,CAAA;AACd,CAAC,CAAA;AAHY,QAAA,mBAAmB,uBAG/B"}
