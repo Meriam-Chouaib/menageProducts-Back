@@ -2,9 +2,9 @@ import { Product } from '@prisma/client'
 import * as productQueries from '../queries/product.queries'
 import { GetProductsParams } from '@app/type/product.type'
 
-const createProduct = async (data: Product) => {
+const createProduct = async (data: Product, images: string[]) => {
   try {
-    const product = await productQueries.createProduct(data)
+    const product = await productQueries.createProduct(data, images)
     console.log('🚀 ~ createProduct ~ product:', product)
     return product
   } catch (e) {

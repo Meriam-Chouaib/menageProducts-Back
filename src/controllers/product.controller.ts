@@ -10,17 +10,24 @@ const createProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { price, quantity, ...rest } = req.body
+    const { price, quantity, userId, description, ...rest } = req.body
 
+    const images = req.files as Express.Multer.File[]
+    if (!images || images.length === 0) {
+      throw new Error('No images provided')
+    }
+
+    const imagePaths = images.map((file) => file.path) // Store file paths
     const data: Product = {
       ...rest,
       price: Number(price),
       quantity: Number(quantity),
-      description: 'description',
+      userId: Number(userId),
+      description: description || 'No description provided',
     }
-    const product = await productService.createProduct(data)
-    console.log('🚀 ~ product:', product)
-    console.log(res.json)
+    console.log('🚀 ~ data:', data)
+
+    const product = await productService.createProduct(data, imagePaths)
 
     res.status(httpStatus.OK).send(product)
   } catch (e) {
@@ -59,11 +66,15 @@ const updateProduct = async (
       res.status(400).json({ error: 'Invalid or missing product ID' })
     }
     const { price, quantity, ...rest } = req.body
+    const images = req.files as Express.Multer.File[]
+
+    const imagePaths = images.map((file) => file.path) // Store file paths
 
     const updatedData: Product = {
       ...rest,
       price: Number(price),
       quantity: Number(quantity),
+      images: imagePaths,
     }
 
     const updatedProduct = await productService.updateProduct(
@@ -96,9 +107,7 @@ const deleteProduct = async (
       res.status(404).json({ error: 'Product not found' })
     }
   } catch (err) {
-    // next(err)
-    console.log(err.message)
-    // res.status(500).json({ error: err.message || 'Internal Server Error' })
+    res.status(500).json({ error: err.message || 'Internal Server Error' })
   }
 }
 const getProductById = async (
