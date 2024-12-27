@@ -1,32 +1,29 @@
-import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 
-export const authenticate = (
+import { Request, Response, NextFunction } from 'express'
+import { isBlacklisted } from '@app/utils/jwt'
+
+export const authenticate = async (
   req: Request,
   res: Response,
   next: NextFunction
-): void => {
-  // Make sure the return type is void
-  const token = req.headers.authorization?.split(' ')[1] // Get the token from header (Bearer token)
-
-  if (!token) {
-    // If no token, send the response and return to prevent further code execution
-    res.status(401).json({ message: 'No token provided, authorization denied' })
-    return
-  }
-
-  // Verify the token
-  jwt.verify(token, process.env.JWT_SECRET || '', (err, decoded) => {
-    if (err) {
-      // If there's an error with the token, send the response and return
-      res.status(401).json({ message: 'Invalid or expired token' })
-      return
-    }
-
-    // Attach the decoded user to the request object
-    req.body = decoded
-
-    // Call next to move to the next middleware or route handler
+): Promise<void> => {
+  const token = req.header('Authorization')?.replace('Bearer ', '')
+  const isBlacklistedToken = await isBlacklisted(token)
+  if (!token || isBlacklistedToken) {
+    res.status(401).json({ error: 'Authentication required' })
     next()
-  })
+  } else
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
+      decoded && next()
+    } catch (err) {
+      if (err instanceof jwt.JsonWebTokenError) {
+        console.log('Token error details:', err.message)
+      } else if (err instanceof jwt.TokenExpiredError) {
+        console.log('Token expired error:', err.message)
+      } else {
+        console.log('Unknown JWT error:', err)
+      }
+    }
 }

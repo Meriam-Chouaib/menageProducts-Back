@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express'
 import * as authService from '../services/auth.service'
 import httpStatus from 'http-status'
 import ApiResponse from '@app/utils/ApiResponse'
+import { blacklistToken, isBlacklisted } from '@app/utils/jwt'
 
 const signUp = async (
   req: Request,
@@ -34,65 +35,22 @@ const signIn = async (
   }
 }
 
-//**************** TODO fixing the logout
-// const logout = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ): Promise<void> => {
-//   const token = getTokenFromHeaders(req)
-//   if (!token) {
-//     res
-//       .status(httpStatus.BAD_REQUEST)
-//       .send(new ApiResponse(400, {}, 'Token not provided'))
-//   }
+const logout = async (req: Request, res: Response): Promise<void> => {
+  const token = req.header('Authorization')?.replace('Bearer ', '')
 
-//   try {
-//     if (req.session) {
-//       req.session.destroy((err) => {
-//         if (err) {
-//           res.status(400).send('Unable to log out')
-//         } else {
-//           res.send('Logout successful')
-//         }
-//       })
-//     } else {
-//       res.end()
-//     }
-//     const response = await authService.logout(token)
-//     console.log('🚀 ~ response:', response)
-//     res.status(httpStatus.OK).send(response)
-//   } catch (err) {
-//     next(err)
-//   }
-// }
-const logout = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    if (req.session) {
-      req.session.destroy((err) => {
-        if (err) {
-          return res
-            .status(httpStatus.INTERNAL_SERVER_ERROR)
-            .send(
-              new ApiResponse(500, {}, 'Unable to log out due to session error')
-            )
-        }
-        res
-          .status(httpStatus.OK)
-          .send(new ApiResponse(200, {}, 'Logout successful'))
-      })
-    } else {
-      res
-        .status(httpStatus.BAD_REQUEST)
-        .send(new ApiResponse(400, {}, 'No active session found'))
+  const blacklisted = await isBlacklisted(token)
+
+  if (!token || blacklisted) {
+    res.status(400).json({ error: 'Token required' })
+  } else
+    try {
+      const result = await blacklistToken(token)
+      if (result) {
+        res.status(200).json({ message: 'Logged out successfully' })
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to logout' })
     }
-  } catch (err) {
-    next(err)
-  }
 }
 
 export { signUp, signIn, logout }

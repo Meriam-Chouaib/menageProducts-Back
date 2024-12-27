@@ -3,13 +3,42 @@ import { getDbInstance } from '../database'
 
 const db = getDbInstance()
 
-export const createProduct = async (product: Product): Promise<Product> => {
+export const createProduct = async (
+  product: Product,
+  images: string[]
+): Promise<Product> => {
+  console.log('🚀 ~ createProduct ~ product:', product)
+  const { category, name, price, quantity, userId, description } = product
   try {
-    const newProduct = await db.product.create({ data: product })
-    console.log('🚀 ~ createProduct ~ newProduct:', newProduct)
-    return newProduct
+    const newProduct = await db.product.create({
+      data: {
+        name,
+        category,
+        price,
+        quantity,
+        userId,
+        description,
+      },
+    })
+
+    const imagePromises = images.map(async (imageUrl) => {
+      return db.image.create({
+        data: {
+          url: imageUrl,
+          productId: newProduct.id,
+        },
+      })
+    })
+
+    await Promise.all(imagePromises)
+
+    return db.product.findUnique({
+      where: { id: newProduct.id },
+      include: { images: true },
+    })
   } catch (error) {
-    throw new Error('Failed to create product')
+    console.log('Error message:', error.message)
+    throw error
   }
 }
 export const getProducts = async (page: number, rowsPerPage: number) => {
@@ -20,6 +49,9 @@ export const getProducts = async (page: number, rowsPerPage: number) => {
     const products = await db.product.findMany({
       skip,
       take: rowsPerPage,
+      include: {
+        images: true,
+      },
     })
     const totalCount = productsTotal.length
 
@@ -39,6 +71,9 @@ export const getProductsByKeyword = async (
           { description: { contains: keyword } },
           { category: { contains: keyword } },
         ],
+      },
+      include: {
+        images: true,
       },
     })
     return products
@@ -75,7 +110,12 @@ export const deleteProduct = async (id: number): Promise<Product> => {
 }
 export const getProductById = async (id: number): Promise<Product> => {
   try {
-    const product = await db.product.findUnique({ where: { id } })
+    const product = await db.product.findUnique({
+      where: { id },
+      include: {
+        images: true,
+      },
+    })
     return product
   } catch (error) {
     throw new Error('Failed to fetch product by id')

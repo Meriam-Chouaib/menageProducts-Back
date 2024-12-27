@@ -2,11 +2,13 @@ import express, { Application, NextFunction, Request, Response } from 'express'
 import cors from 'cors'
 import { Endpoints } from './config/endpoints'
 import { mainRouter } from './routes/main.routes'
-
+import path from 'path'
 const app: Application = express()
 const PORT = process.env.PORT || 3000
 
 const { API, ROOT } = Endpoints
+
+app.use('/uploads', express.static(path.join(__dirname, './uploads'))) // Adjust path if needed
 
 app.get(ROOT, (req: Request, res: Response) => {
   res.send('Hello, TypeScript with Yarn!')
