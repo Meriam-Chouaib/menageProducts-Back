@@ -100,12 +100,14 @@ export const updateProduct = async (
 }
 export const deleteProduct = async (id: number): Promise<Product> => {
   try {
+    await db.image.deleteMany({ where: { productId: id } })
     const deletedProduct = await db.product.delete({
       where: { id },
     })
+
     return deletedProduct
   } catch (error) {
-    throw new Error('Failed to delete product')
+    console.log('error.message', error.message)
   }
 }
 export const getProductById = async (id: number): Promise<Product> => {

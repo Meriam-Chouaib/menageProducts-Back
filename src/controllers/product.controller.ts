@@ -17,7 +17,7 @@ const createProduct = async (
       throw new Error('No images provided')
     }
 
-    const imagePaths = images.map((file) => file.path) // Store file paths
+    const imagePaths = images.map((file) => file.filename) // Store file paths
     const data: Product = {
       ...rest,
       price: Number(price),
